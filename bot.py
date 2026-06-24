@@ -134,13 +134,13 @@ def should_respond(message: Message) -> bool:
     if message.chat.type == "private":
         return True
 
-    if not message.text:
+    if not message.text and not message.forward_origin:
         return False
 
-    if f"@{BOT_USERNAME}" in message.text:
+    if f"@{BOT_USERNAME}" in (message.text or ""):
         return True
 
-    if "Бо Синн" in message.text:
+    if "Бо Синн" in (message.text or ""):
         return True
 
     if message.reply_to_message and message.reply_to_message.from_user and message.reply_to_message.from_user.id == bot.id:
@@ -216,13 +216,16 @@ async def store_message(message: Message):
     """Сохраняет сообщение в историю чата."""
     if message.chat.type not in ("group", "supergroup"):
         return
-    if not message.from_user or not message.text:
+    if not message.from_user:
+        return
+    text = message.text or message.caption or ""
+    if not text:
         return
 
     name = message.from_user.full_name or message.from_user.username or "Unknown"
     chat_id = message.chat.id
     history = message_history[chat_id]
-    history.append((datetime.now(), name, message.text))
+    history.append((datetime.now(), name, text))
 
     if len(history) > HISTORY_SIZE:
         message_history[chat_id] = history[-HISTORY_SIZE:]
@@ -280,13 +283,14 @@ async def handle_message(message: Message):
     await bot.send_chat_action(message.chat.id, "typing")
 
     # Определяем текст сообщения пользователя
-    user_text = message.text or ""
+    user_text = (message.text or message.caption or "")
     user_identifier = f"@{message.from_user.username}" if message.from_user.username else (message.from_user.full_name or "User")
     prompt = f"{user_identifier}: {user_text}"
 
     # Если это пересланное сообщение в чате для подколов
+    content = message.text or message.caption or ""
     if message.forward_origin:
-        prompt = f"{user_identifier} переслал сообщение в чат: <<{user_text}>>. Оскорби его за это."
+        prompt = f"{user_identifier} переслал сообщение в чат. Прокомментируй это пересланное сообщение грубо и смешно: <<{content}>>"
     # Если это reply — добавляем информацию в промпт
     elif message.reply_to_message and message.reply_to_message.from_user:
         replied_name = message.reply_to_message.from_user.full_name or message.reply_to_message.from_user.username or "User"
