@@ -1,0 +1,8 @@
+name: angry-bot
+
+services:
+  bot:
+    build: .
+    container_name: angry-bot
+    env_file: .env
+    restart: unless-stopped
