@@ -120,7 +120,7 @@ LLM_API_URL = f"{LLM_BASE_URL.rstrip('/')}/chat/completions"
 
 
 def strip_markdown(text: str) -> str:
-    """Удаляет markdown-разметку, чтобы Telegram не ругался на Bad Request."""
+    text = re.sub(r'<thought>.*?</thought>', '', text, flags=re.DOTALL)
     text = re.sub(r'[*_~`>#\[\]()|]', '', text)
     text = re.sub(r'\[.*?\]\(.*?\)', '', text)
     return text.strip()
@@ -192,7 +192,7 @@ async def query_llm(context: str, user_message: str, system_override: Optional[s
         "model": LLM_MODEL,
         "messages": messages,
         "temperature": 0.9,
-        "max_tokens": 300,
+        "max_tokens": 1024,
     }
 
     try:
