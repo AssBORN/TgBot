@@ -146,6 +146,9 @@ def should_respond(message: Message) -> bool:
     if message.reply_to_message and message.reply_to_message.from_user and message.reply_to_message.from_user.id == bot.id:
         return True
 
+    if TAUNT_CHAT_ID and str(message.chat.id) == TAUNT_CHAT_ID and message.forward_origin:
+        return True
+
     return False
 
 
@@ -281,8 +284,11 @@ async def handle_message(message: Message):
     user_identifier = f"@{message.from_user.username}" if message.from_user.username else (message.from_user.full_name or "User")
     prompt = f"{user_identifier}: {user_text}"
 
+    # Если это пересланное сообщение в чате для подколов
+    if message.forward_origin:
+        prompt = f"{user_identifier} переслал сообщение в чат: <<{user_text}>>. Оскорби его за это."
     # Если это reply — добавляем информацию в промпт
-    if message.reply_to_message and message.reply_to_message.from_user:
+    elif message.reply_to_message and message.reply_to_message.from_user:
         replied_name = message.reply_to_message.from_user.full_name or message.reply_to_message.from_user.username or "User"
         replied_text = message.reply_to_message.text or ""
         if message.reply_to_message.from_user.id == bot.id:
