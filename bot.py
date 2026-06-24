@@ -296,7 +296,7 @@ async def handle_message(message: Message):
         replied_name = message.reply_to_message.from_user.full_name or message.reply_to_message.from_user.username or "User"
         replied_text = message.reply_to_message.text or ""
         if message.reply_to_message.from_user.id == bot.id:
-            prompt = f"{user_identifier} ответил на твоё сообщение: <<{replied_text}>>. Его новый вопрос: {user_text}"
+            prompt = f"Пользователь {user_identifier} ответил на твоё сообщение. Твоё сообщение: <<{replied_text}>>. Новое сообщение пользователя: {user_text}"
         else:
             prompt = f"{user_identifier} ответил пользователю @{replied_name} который писал: <<{replied_text}>>. Сообщение: {user_text}"
 
